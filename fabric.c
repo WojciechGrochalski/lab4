@@ -81,36 +81,42 @@ int create_workers(int number_of_workers, int semafor, int object, int cycles_of
 {
     pid_t pid;
     start_work(semafor, object);
-
-    for (int i = 1; i < number_of_workers; i++)
+    for (int j = 0; j < cycles_of_work; j++)
     {
-        switch (pid = fork())
+        for (int i = 1; i < number_of_workers; i++)
         {
-        case -1: /* blad */
-            printf("Error in fork\n");
-        case 0: /* proces potomny */
-            if (i == number_of_workers - 1)
-            {
 
-                return 0;
-            }
-            else
+            pid = fork();
+
+            if (pid == -1)
             {
-                printf("working proces %d\n", i + 1);
-                work_for_proces(semafor);
-                return 0;
+                printf("Error in fork\n");
+            }
+            if (pid == 0)
+            {
+                if (i == number_of_workers - 1)
+                {
+
+                    return 0;
+                }
+                else
+                {
+                    work_for_proces(semafor);
+                    return 0;
+                }
             }
         }
     }
-
-    for (int i = 1; i < number_of_workers; i++)
+    for (int j = 0; j < cycles_of_work; j++)
     {
-        if (wait(0) == -1)
+        for (int i = 1; i < number_of_workers; i++)
         {
-            printf("Error in wait\n");
+            if (wait(0) == -1)
+            {
+                printf("Error in wait\n");
+            }
         }
     }
-    delete_prodution_lines();
     printf("Result of work is %d\n", end_work(semafor));
     printf("Result of work wihout semaphors is %d\n", calculate_result_wihout_semafors(object, number_of_workers, cycles_of_work));
 }
@@ -133,9 +139,9 @@ int main(int argc, char *argv[])
            number_of_workers, cycles_of_work);
 
     semafor = create_production_lines();
-    for (int j = 0; j < cycles_of_work; j++)
-    {
-        create_workers(number_of_workers, semafor, size_of_production, cycles_of_work);
-    }
+
+    create_workers(number_of_workers, semafor, size_of_production, cycles_of_work);
+
+    delete_prodution_lines();
     exit(0);
 }
